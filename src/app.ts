@@ -1,7 +1,9 @@
 import { Elysia } from 'elysia';
 import { cors } from '@elysiajs/cors';
+import { cookie } from '@elysiajs/cookie';
 import { loadConfig } from './config/env';
 import { statusForError, bodyForError } from './infrastructure/http/error-handler';
+import { authRouter } from './modules/auth/adapters/http/auth-router';
 
 const config = loadConfig();
 const isProduction = config.NODE_ENV === 'production';
@@ -34,12 +36,11 @@ export function buildApp() {
         methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
       }),
     )
+    .use(cookie())
     // Liveness / readiness for container orchestration.
     .get('/health', () => ({ status: 'ok' }))
-    .get('/ready', () => ({ status: 'ready' }));
-
-  // TODO: mount module routers under /api/v1 as features land:
-  //   .use(authRouter).use(businessRouter).use(appointmentsRouter) ...
+    .get('/ready', () => ({ status: 'ready' }))
+    .use(authRouter);
 
   return app;
 }
