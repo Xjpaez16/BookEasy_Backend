@@ -10,7 +10,10 @@ const isProduction = config.NODE_ENV === 'production';
  * Composition root. Wires cross-cutting middleware and mounts module routers.
  * Business logic lives in the application layer, never here.
  */
-export function buildApp(): Elysia {
+// Return type is inferred on purpose: annotating it as `Elysia` conflicts with
+// `exactOptionalPropertyTypes` due to Elysia's generic lifecycle hook types.
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export function buildApp() {
   const app = new Elysia()
     .onError(({ error, set }) => {
       set.status = statusForError(error);
