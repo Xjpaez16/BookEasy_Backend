@@ -6,7 +6,6 @@ import {
   timestamp,
   integer,
   boolean,
-  numeric,
   pgEnum,
   index,
   uniqueIndex,
