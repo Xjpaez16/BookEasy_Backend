@@ -4,6 +4,7 @@ import { cookie } from '@elysiajs/cookie';
 import { loadConfig } from './config/env';
 import { statusForError, bodyForError } from './infrastructure/http/error-handler';
 import { authRouter } from './modules/auth/adapters/http/auth-router';
+import { businessRouter } from './modules/business/adapters/http/business-router';
 
 const config = loadConfig();
 const isProduction = config.NODE_ENV === 'production';
@@ -40,7 +41,8 @@ export function buildApp() {
     // Liveness / readiness for container orchestration.
     .get('/health', () => ({ status: 'ok' }))
     .get('/ready', () => ({ status: 'ready' }))
-    .use(authRouter);
+    .use(authRouter)
+    .use(businessRouter);
 
   return app;
 }
