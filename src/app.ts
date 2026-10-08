@@ -10,6 +10,7 @@ import { customersRouter } from './modules/customers/adapters/http/customers-rou
 import { appointmentsRouter } from './modules/appointments/adapters/http/appointments-router';
 import { dashboardRouter } from './modules/dashboard/adapters/http/dashboard-router';
 import { subscriptionsRouter } from './modules/subscriptions/adapters/http/subscriptions-router';
+import { auditLogsRouter } from './modules/audit/adapters/http/audit-logs-router';
 
 const config = loadConfig();
 const isProduction = config.NODE_ENV === 'production';
@@ -52,7 +53,8 @@ export function buildApp() {
     .use(customersRouter)
     .use(appointmentsRouter)
     .use(dashboardRouter)
-    .use(subscriptionsRouter);
+    .use(subscriptionsRouter)
+    .use(auditLogsRouter);
 
   return app;
 }
