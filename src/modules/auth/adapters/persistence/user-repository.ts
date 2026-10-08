@@ -1,6 +1,8 @@
 import { eq } from 'drizzle-orm';
 import type { Database } from '../../../../infrastructure/db/client';
 import { schema } from '../../../../infrastructure/db/client';
+import { txDb } from '../../../../infrastructure/db/unit-of-work';
+import type { TransactionContext } from '../../../../shared/application/ports';
 import { User } from '../../domain/user';
 import type { UserRepository } from '../../application/ports';
 
@@ -8,8 +10,8 @@ import type { UserRepository } from '../../application/ports';
 export class DrizzleUserRepository implements UserRepository {
   constructor(private readonly db: Database) {}
 
-  async findById(id: string): Promise<User | null> {
-    const rows = await this.db
+  async findById(id: string, tx?: TransactionContext): Promise<User | null> {
+    const rows = await txDb(this.db, tx)
       .select()
       .from(schema.users)
       .where(eq(schema.users.id, id))
@@ -18,8 +20,8 @@ export class DrizzleUserRepository implements UserRepository {
     return row ? this.toDomain(row) : null;
   }
 
-  async findByEmail(email: string): Promise<User | null> {
-    const rows = await this.db
+  async findByEmail(email: string, tx?: TransactionContext): Promise<User | null> {
+    const rows = await txDb(this.db, tx)
       .select()
       .from(schema.users)
       .where(eq(schema.users.email, email))
@@ -28,9 +30,9 @@ export class DrizzleUserRepository implements UserRepository {
     return row ? this.toDomain(row) : null;
   }
 
-  async save(user: User): Promise<void> {
+  async save(user: User, tx?: TransactionContext): Promise<void> {
     const s = user.snapshot();
-    await this.db
+    await txDb(this.db, tx)
       .insert(schema.users)
       .values({
         id: s.id,
