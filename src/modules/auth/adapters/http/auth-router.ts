@@ -16,8 +16,17 @@ import {
   requestPasswordReset,
   resetPassword,
 } from '../../application/use-cases/password-and-verification';
+import { getCurrentUser } from '../../application/use-cases/get-current-user';
 
 const REFRESH_COOKIE = 'refresh_token';
+
+/** Extracts a bearer token from the Authorization header, or null. */
+function bearerToken(request: Request): string | null {
+  const header = request.headers.get('authorization');
+  if (!header) return null;
+  const [scheme, token] = header.split(' ');
+  return scheme?.toLowerCase() === 'bearer' && token ? token : null;
+}
 
 const container = createAuthContainer();
 
@@ -128,4 +137,19 @@ export const authRouter = new Elysia({ prefix: '/api/v1/auth' })
     const input = parse(resetPasswordSchema, body);
     await resetPassword(input, container);
     return { ok: true };
+  })
+
+  // Returns the authenticated user's profile. Lets the SPA hydrate the session
+  // after login/refresh (the login response carries only the access token).
+  .get('/me', async ({ request }) => {
+    const token = bearerToken(request);
+    if (!token) throw new UnauthorizedError('Missing access token');
+    let userId: string;
+    try {
+      const claims = await container.tokens.verifyAccessToken(token);
+      userId = claims.sub;
+    } catch {
+      throw new UnauthorizedError('Invalid or expired access token');
+    }
+    return getCurrentUser(userId, container);
   });
