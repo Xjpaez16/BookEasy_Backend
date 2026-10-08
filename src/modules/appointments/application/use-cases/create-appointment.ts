@@ -13,6 +13,7 @@ import type {
   ServiceLookup,
   CustomerLookup,
   StaffLookup,
+  ReminderScheduler,
 } from '../ports';
 
 export interface AppointmentDeps {
@@ -26,6 +27,8 @@ export interface AppointmentDeps {
   ids: IdGenerator;
   clock: Clock;
   uow: UnitOfWork;
+  /** Optional: schedule a reminder on booking. Absent in unit tests. */
+  reminders?: ReminderScheduler;
 }
 
 export interface CreateAppointmentInput {
@@ -88,7 +91,7 @@ export async function createAppointment(
     throw new ValidationError('Invalid start timestamp');
   }
 
-  return deps.uow.withTransaction(async (tx) => {
+  const created = await deps.uow.withTransaction(async (tx) => {
     const business = await deps.businesses.findById(input.businessId, tx);
     if (!business) throw new NotFoundError('Business not found');
 
@@ -149,4 +152,21 @@ export async function createAppointment(
 
     return toView(appointment);
   });
+
+  // Schedule a reminder AFTER the booking is committed, so a rolled-back
+  // transaction never leaves a dangling reminder. Best-effort: a scheduling
+  // failure must not fail the (already successful) booking.
+  if (deps.reminders) {
+    try {
+      await deps.reminders.scheduleForAppointment({
+        businessId: input.businessId,
+        appointmentId: created.id,
+        appointmentStartAt: new Date(created.startAt),
+      });
+    } catch {
+      // Swallow — the appointment exists; reminder scheduling is non-critical.
+    }
+  }
+
+  return created;
 }

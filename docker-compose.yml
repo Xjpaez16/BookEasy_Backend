@@ -43,5 +43,23 @@ services:
     ports:
       - '3000:3000'
 
+  worker:
+    build: .
+    command: ['bun', 'run', 'src/worker.ts']
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgres://bookeasy:bookeasy@db:5432/bookeasy
+      REDIS_URL: redis://redis:6379
+      ACCESS_TOKEN_SECRET: dev-access-secret-change-me-32chars-min
+      REFRESH_TOKEN_SECRET: dev-refresh-secret-change-me-32chars-min
+      CORS_ALLOWED_ORIGINS: http://localhost:5173
+      REMINDER_POLL_MS: '15000'
+      REMINDER_BATCH: '50'
+
 volumes:
   db_data:

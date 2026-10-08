@@ -15,6 +15,8 @@ import {
   DrizzleCustomerLookup,
   DrizzleStaffLookup,
 } from './adapters/persistence/lookups';
+import { createNotificationsContainer } from '../notifications/container';
+import { NotificationsReminderScheduler } from './adapters/reminders/notifications-reminder-scheduler';
 
 /** Wires the concrete adapters the appointment use cases depend on. */
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -32,6 +34,7 @@ export function createAppointmentsContainer() {
     clock: new SystemClock(),
     ids: new UuidGenerator(),
     uow: new DrizzleUnitOfWork(db),
+    reminders: new NotificationsReminderScheduler(createNotificationsContainer()),
   };
 }
 

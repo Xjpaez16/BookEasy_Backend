@@ -76,3 +76,16 @@ export interface StaffLookup {
     tx?: TransactionContext,
   ): Promise<boolean>;
 }
+
+/**
+ * Outbound port the appointment use cases use to schedule a reminder when a
+ * booking is created. Implemented by an adapter that delegates to the
+ * notifications module, so appointments stay decoupled from how reminders work.
+ */
+export interface ReminderScheduler {
+  scheduleForAppointment(input: {
+    businessId: string;
+    appointmentId: string;
+    appointmentStartAt: Date;
+  }): Promise<void>;
+}
