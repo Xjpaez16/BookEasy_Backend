@@ -5,6 +5,32 @@ import { z } from 'zod';
  * Fails fast at boot if required variables are missing or malformed.
  * Never log the parsed secrets.
  */
+
+/**
+ * Coerces an empty string to `undefined` so a blank `.env` line (e.g.
+ * `EMAIL_FROM=`) is treated as "not set" rather than failing an optional
+ * `.url()` / `.email()` check. Env vars are always strings on the wire.
+ */
+/* eslint-disable @typescript-eslint/explicit-function-return-type --
+   return types are inferred Zod schemas; annotating them fights preprocess's
+   `unknown` input type. */
+const optionalString = () =>
+  z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    z.string().optional(),
+  );
+const optionalUrl = () =>
+  z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    z.string().url().optional(),
+  );
+const optionalEmail = () =>
+  z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    z.string().email().optional(),
+  );
+/* eslint-enable @typescript-eslint/explicit-function-return-type */
+
 const EnvSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(3000),
@@ -28,18 +54,18 @@ const EnvSchema = z.object({
     .transform((v) => v.split(',').map((s) => s.trim()).filter(Boolean)),
 
   // Cookies
-  COOKIE_DOMAIN: z.string().optional(),
+  COOKIE_DOMAIN: optionalString(),
   COOKIE_SECURE: z
     .enum(['true', 'false'])
     .default('false')
     .transform((v) => v === 'true'),
 
-  // Notifications
-  WHATSAPP_API_URL: z.string().url().optional(),
-  WHATSAPP_API_TOKEN: z.string().optional(),
-  WHATSAPP_PHONE_ID: z.string().optional(),
-  EMAIL_FROM: z.string().email().optional(),
-  SMTP_URL: z.string().optional(),
+  // Notifications (optional for MVP boot)
+  WHATSAPP_API_URL: optionalUrl(),
+  WHATSAPP_API_TOKEN: optionalString(),
+  WHATSAPP_PHONE_ID: optionalString(),
+  EMAIL_FROM: optionalEmail(),
+  SMTP_URL: optionalString(),
 });
 
 export type AppConfig = z.infer<typeof EnvSchema>;
