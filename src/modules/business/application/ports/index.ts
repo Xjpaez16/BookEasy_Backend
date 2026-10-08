@@ -49,3 +49,15 @@ export interface AuditEntry {
 export interface AuditLogRepository {
   record(entry: AuditEntry, tx?: TransactionContext): Promise<void>;
 }
+
+/**
+ * Provisions the default subscription for a newly created business, within the
+ * same transaction. Defined here as a port so the business module does not
+ * depend on the subscriptions module — an adapter supplies the implementation.
+ */
+export interface SubscriptionInitializer {
+  initialize(
+    input: { businessId: string; actorUserId: string },
+    tx: TransactionContext,
+  ): Promise<void>;
+}
