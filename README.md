@@ -42,5 +42,30 @@ bun run db:generate && bun run db:migrate
 bun run dev
 ```
 
+### Without Docker (native, lighter on RAM)
+
+Install PostgreSQL 16 + Redis once (in your own terminal — a sandboxed agent
+cannot run Homebrew's installer):
+
+```bash
+brew install postgresql@16 redis
+brew services start postgresql@16
+brew services start redis
+```
+
+Then provision the role/db and apply migrations with the helper script:
+
+```bash
+cp .env.example .env
+bun install
+bash scripts/dev-db-setup.sh   # creates the bookeasy role+db, runs migrations
+bun run dev                    # API on :3000
+bun run worker:dev             # reminders worker (needs Redis)
+curl localhost:3000/ready      # -> {"status":"ready"}
+```
+
+Inspect the database visually any time with `bun run db:studio`
+(opens https://local.drizzle.studio).
+
 ## Scripts
 `dev` · `start` · `build` · `typecheck` · `lint` · `test` · `test:unit` · `test:integration` · `test:e2e` · `db:generate` · `db:migrate` · `db:studio`
