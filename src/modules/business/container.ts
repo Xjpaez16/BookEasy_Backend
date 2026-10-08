@@ -11,21 +11,34 @@ import { DrizzleUserRepository } from '../auth/adapters/persistence/user-reposit
 import { DrizzleBusinessRepository } from './adapters/persistence/business-repository';
 import { DrizzleMembershipRepository } from './adapters/persistence/membership-repository';
 import { DrizzleAuditLogRepository } from './adapters/persistence/audit-log-repository';
+import { SubscriptionInitializerAdapter } from './adapters/subscriptions/subscription-initializer';
+import { DrizzleSubscriptionRepository } from '../subscriptions/adapters/persistence/subscription-repository';
 
 /** Wires the concrete adapters the business/staff use cases depend on. */
 // Return type intentionally inferred (container shape).
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function createBusinessContainer() {
+  const clock = new SystemClock();
+  const ids = new UuidGenerator();
+  const uow = new DrizzleUnitOfWork(db);
+  const audit = new DrizzleAuditLogRepository(db);
   return {
     businesses: new DrizzleBusinessRepository(db),
     memberships: new DrizzleMembershipRepository(db),
     users: new DrizzleUserRepository(db),
-    audit: new DrizzleAuditLogRepository(db),
+    audit,
     hasher: new Argon2PasswordHasher(),
     tokens: new HmacTokenService(),
-    clock: new SystemClock(),
-    ids: new UuidGenerator(),
-    uow: new DrizzleUnitOfWork(db),
+    clock,
+    ids,
+    uow,
+    subscriptions: new SubscriptionInitializerAdapter({
+      subscriptions: new DrizzleSubscriptionRepository(db),
+      audit,
+      ids,
+      clock,
+      uow,
+    }),
   };
 }
 

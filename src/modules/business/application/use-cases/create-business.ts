@@ -10,6 +10,7 @@ import type {
   BusinessRepository,
   MembershipRepository,
   AuditLogRepository,
+  SubscriptionInitializer,
 } from '../ports';
 
 export interface CreateBusinessInput {
@@ -27,6 +28,8 @@ export interface CreateBusinessDeps {
   ids: IdGenerator;
   clock: Clock;
   uow: UnitOfWork;
+  /** Optional: provisions the default FREE subscription within the same tx. */
+  subscriptions?: SubscriptionInitializer;
 }
 
 export interface CreateBusinessResult {
@@ -78,6 +81,13 @@ export async function createBusiness(
       },
       tx,
     );
+
+    if (deps.subscriptions) {
+      await deps.subscriptions.initialize(
+        { businessId: business.id, actorUserId: input.actorUserId },
+        tx,
+      );
+    }
 
     return {
       businessId: business.id,

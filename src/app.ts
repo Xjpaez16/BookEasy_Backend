@@ -9,6 +9,7 @@ import { servicesRouter } from './modules/services/adapters/http/services-router
 import { customersRouter } from './modules/customers/adapters/http/customers-router';
 import { appointmentsRouter } from './modules/appointments/adapters/http/appointments-router';
 import { dashboardRouter } from './modules/dashboard/adapters/http/dashboard-router';
+import { subscriptionsRouter } from './modules/subscriptions/adapters/http/subscriptions-router';
 
 const config = loadConfig();
 const isProduction = config.NODE_ENV === 'production';
@@ -50,7 +51,8 @@ export function buildApp() {
     .use(servicesRouter)
     .use(customersRouter)
     .use(appointmentsRouter)
-    .use(dashboardRouter);
+    .use(dashboardRouter)
+    .use(subscriptionsRouter);
 
   return app;
 }
