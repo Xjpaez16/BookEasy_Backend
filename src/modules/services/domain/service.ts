@@ -60,7 +60,7 @@ export class Service {
       description: props.description?.trim() || null,
       durationMinutes: props.durationMinutes,
       priceMinor,
-      currency: assertCurrency(props.currency ?? 'USD'),
+      currency: assertCurrency(props.currency ?? 'COP'),
       active: props.active ?? true,
       deletedAt: props.deletedAt ?? null,
     });

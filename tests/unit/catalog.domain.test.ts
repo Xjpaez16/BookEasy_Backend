@@ -8,7 +8,7 @@ import {
 import { ValidationError } from '../../src/shared/domain/errors';
 
 describe('Service.create', () => {
-  it('defaults price to 0 and currency to USD', () => {
+  it('defaults price to 0 and currency to COP', () => {
     const s = Service.create({
       id: 's1',
       businessId: 'b1',
@@ -17,7 +17,7 @@ describe('Service.create', () => {
     });
     const snap = s.snapshot();
     expect(snap.priceMinor).toBe(0);
-    expect(snap.currency).toBe('USD');
+    expect(snap.currency).toBe('COP');
     expect(s.isActive).toBe(true);
   });
   it('rejects a non-positive or fractional duration', () => {
