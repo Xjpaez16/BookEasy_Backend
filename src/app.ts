@@ -11,6 +11,7 @@ import { appointmentsRouter } from './modules/appointments/adapters/http/appoint
 import { dashboardRouter } from './modules/dashboard/adapters/http/dashboard-router';
 import { subscriptionsRouter } from './modules/subscriptions/adapters/http/subscriptions-router';
 import { auditLogsRouter } from './modules/audit/adapters/http/audit-logs-router';
+import { publicCatalogRouter } from './modules/public-catalog/adapters/http/public-catalog-router';
 
 const config = loadConfig();
 const isProduction = config.NODE_ENV === 'production';
@@ -47,6 +48,8 @@ export function buildApp() {
     // Liveness / readiness for container orchestration.
     .get('/health', () => ({ status: 'ok' }))
     .get('/ready', () => ({ status: 'ready' }))
+    // Public, unauthenticated marketplace storefront (read-only, rate-limited).
+    .use(publicCatalogRouter)
     .use(authRouter)
     .use(businessRouter)
     .use(servicesRouter)
