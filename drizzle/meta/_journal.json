@@ -8,6 +8,13 @@
       "when": 1791225893534,
       "tag": "0000_spooky_shriek",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791564884144,
+      "tag": "0001_pink_wolf_cub",
+      "breakpoints": true
     }
   ]
 }

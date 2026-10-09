@@ -131,6 +131,10 @@ export const customers = pgTable(
   {
     id: uuid('id').primaryKey().defaultRandom(),
     businessId: uuid('business_id').notNull().references(() => businesses.id),
+    // Links an authenticated marketplace user to THEIR customer record in this
+    // business. Nullable: customers created by the owner (CRM) have no user.
+    // A user may be a customer in many businesses, so uniqueness is per-tenant.
+    userId: uuid('user_id').references(() => users.id),
     fullName: varchar('full_name', { length: 200 }).notNull(),
     phone: varchar('phone', { length: 32 }),
     email: varchar('email', { length: 320 }),
@@ -141,6 +145,12 @@ export const customers = pgTable(
   },
   (t) => ({
     byBusiness: index('customers_business_idx').on(t.businessId),
+    // One customer record per (business, user) — a user cannot be two customers
+    // in the same business, but can be a customer in different businesses.
+    byBusinessUser: uniqueIndex('customers_business_user_unique').on(
+      t.businessId,
+      t.userId,
+    ),
   }),
 );
 

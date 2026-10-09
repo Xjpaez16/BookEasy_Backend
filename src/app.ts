@@ -12,6 +12,7 @@ import { dashboardRouter } from './modules/dashboard/adapters/http/dashboard-rou
 import { subscriptionsRouter } from './modules/subscriptions/adapters/http/subscriptions-router';
 import { auditLogsRouter } from './modules/audit/adapters/http/audit-logs-router';
 import { publicCatalogRouter } from './modules/public-catalog/adapters/http/public-catalog-router';
+import { publicBookingRouter } from './modules/public-booking/adapters/http/public-booking-router';
 
 const config = loadConfig();
 const isProduction = config.NODE_ENV === 'production';
@@ -50,6 +51,9 @@ export function buildApp() {
     .get('/ready', () => ({ status: 'ready' }))
     // Public, unauthenticated marketplace storefront (read-only, rate-limited).
     .use(publicCatalogRouter)
+    // Public booking: availability (no auth) + book/manage own appointments
+    // (user-authenticated, NOT a business member). Tenant resolved by slug.
+    .use(publicBookingRouter)
     .use(authRouter)
     .use(businessRouter)
     .use(servicesRouter)
